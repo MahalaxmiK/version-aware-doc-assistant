@@ -76,8 +76,8 @@ flowchart LR
 - [x] Add a `/health` endpoint
 - [x] Create synthetic v1 and v2 documentation
 - [x] Add an automated health test
-- [ ] Parse Markdown by heading
-- [ ] Attach version metadata to chunks
+- [x] Parse Markdown by heading
+- [x] Attach version metadata to chunks
 - [ ] Generate embeddings
 - [ ] Add version-filtered vector retrieval
 - [ ] Generate citation-backed answers
