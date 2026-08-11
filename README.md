@@ -2,22 +2,23 @@
 
 # 📚 Version-Aware Documentation Assistant
 
-### Ask technical questions. Get answers from the correct product version.
+### Ask technical questions. Retrieve evidence from the correct product version.
 
-A retrieval-augmented documentation assistant designed to prevent answers from mixing information across software versions.
+A version-aware retrieval-augmented generation project designed to prevent technical answers from mixing incompatible documentation versions.
 
-![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-API-009688?logo=fastapi&logoColor=white)
-![Status](https://img.shields.io/badge/Status-In%20Development-orange)
-![License](https://img.shields.io/badge/License-MIT-blue)
+![Qdrant](https://img.shields.io/badge/Qdrant-Vector_Search-DC244C?logo=qdrant&logoColor=white)
+![Pytest](https://img.shields.io/badge/Tests-15_Passing-0A9EDC?logo=pytest&logoColor=white)
+![Status](https://img.shields.io/badge/Status-Retrieval_Complete-blue)
 
 </div>
 
 ---
 
-## The problem
+## The Problem
 
-Technical documentation changes between product releases. A normal documentation chatbot may retrieve information from the wrong version and confidently provide an outdated answer.
+Technical documentation changes between product releases. A conventional documentation chatbot may retrieve information from multiple versions and confidently provide outdated or conflicting guidance.
 
 For example:
 
@@ -27,70 +28,134 @@ For example:
 | How do I authenticate? | API key | OAuth 2.0 |
 | Which export formats are supported? | CSV | CSV and JSON |
 
-This project ensures that a question about **version 1 is answered exclusively from version 1 documentation**.
+This project prevents cross-version mixing by filtering the searchable knowledge base before semantic ranking and answer generation.
 
-## Project objective
+## Project Objective
 
-Build a technical-documentation assistant that:
+Build a documentation assistant that:
 
-- Retrieves passages from a user-selected product version
-- Prevents information from different versions from being mixed
-- Generates answers grounded in retrieved documentation
-- Includes source and section citations
-- Abstains when the selected documentation does not contain an answer
-- Measures retrieval quality, answer accuracy and version isolation
+- Parses versioned technical documentation
+- Creates meaningful, heading-aware chunks
+- Generates semantic embeddings
+- Stores vectors and metadata in Qdrant
+- Filters retrieval by product and version
+- Generates grounded answers with source citations
+- Abstains when the selected documentation lacks sufficient evidence
+- Uses bounded agent behavior for clarification, retrieval, and version comparison
+- Measures retrieval quality, version isolation, citation accuracy, and latency
 
-## Planned workflow
+## Architecture
 
 ```mermaid
 flowchart LR
-    A[Versioned documentation] --> B[Heading-aware chunking]
-    B --> C[Embeddings and metadata]
-    C --> D[Vector database]
-    Q[User question and version] --> E[Version-filtered search]
-    D --> E
-    E --> F[Grounded LLM answer]
-    F --> G[Answer with citations]
+    A[Versioned Markdown] --> B[Heading-aware parser]
+    B --> C[Document chunks]
+    C --> D[FastEmbed embeddings]
+    D --> E[Qdrant vector store]
+
+    Q[Question + product + version] --> F[Metadata filter]
+    E --> F
+    F --> G[Cosine-similarity ranking]
+    G --> H[Retrieved evidence]
+    H -. Next milestone .-> I[Grounded LLM answer]
+    I -. Planned .-> J[Citations and agent workflow]
 ```
 
-## Example behavior
+## Current Retrieval Flow
+
+```text
+User question
+      ↓
+Generate question embedding
+      ↓
+Filter by product and version
+      ↓
+Compare against eligible chunk vectors
+      ↓
+Rank by cosine similarity
+      ↓
+Return text, metadata, and similarity scores
+```
+
+Metadata filtering and semantic search serve different purposes:
+
+- **Metadata filtering** defines where the system is allowed to search.
+- **Semantic similarity** determines which eligible chunks best match the question.
+
+## Example Retrieval Behavior
 
 **Question**
 
 > What is the API request limit?
 
-**Selected version: v1**
+**Product:** `examplecloud`  
+**Selected version:** `v1`
 
-> Version 1 permits 100 API requests per minute.  
-> Source: `v1/api-guide.md` — Request limits
+```text
+Top result: Request limits
+Evidence: Version 1 permits 100 API requests per minute.
+Source: examplecloud/v1/api-guide.md
+```
 
-**Selected version: v2**
+Using the same question with `v2` changes the eligible search scope:
 
-> Version 2 permits 250 API requests per minute.  
-> Source: `v2/api-guide.md` — Request limits
+```text
+Top result: Request limits
+Evidence: Version 2 permits 250 API requests per minute.
+Source: examplecloud/v2/api-guide.md
+```
 
-## Current status
+The v1 search cannot return a v2 chunk, and the v2 search cannot return a v1 chunk.
 
-- [x] Initialize the Python project
-- [x] Add the FastAPI application
+## Current Status
+
+### Completed
+
+- [x] Initialize the Python and FastAPI project
 - [x] Add a `/health` endpoint
-- [x] Create synthetic v1 and v2 documentation
-- [x] Add an automated health test
-- [x] Parse Markdown by heading
-- [x] Attach version metadata to chunks
-- [ ] Generate embeddings
-- [ ] Add version-filtered vector retrieval
-- [ ] Generate citation-backed answers
-- [ ] Add evaluation and version-isolation tests
-- [ ] Add a simple user interface
+- [x] Create synthetic v1 and v2 technical documentation
+- [x] Parse Markdown using heading-aware boundaries
+- [x] Create immutable `DocumentChunk` objects
+- [x] Derive product, version, source, title, and section metadata
+- [x] Generate deterministic chunk identifiers
+- [x] Generate embeddings with FastEmbed
+- [x] Store vectors and payload metadata in Qdrant
+- [x] Retrieve chunks using cosine similarity
+- [x] Enforce product and version filters during retrieval
+- [x] Preserve source metadata for future citations
+- [x] Test semantic retrieval and version isolation
+- [x] Validate invalid retrieval inputs
+- [x] Maintain 15 passing automated tests
 
-## Project structure
+### In Progress
+
+- [ ] Select relevant evidence using retrieval scores
+- [ ] Generate grounded LLM answers
+- [ ] Return structured source citations
+- [ ] Abstain when evidence is insufficient
+- [ ] Add a FastAPI question-answering endpoint
+
+### Planned
+
+- [ ] Add bounded agent behavior
+- [ ] Support version clarification and comparison
+- [ ] Create a larger evaluation dataset
+- [ ] Measure retrieval, citation, and abstention quality
+- [ ] Add a simple user interface
+- [ ] Connect to Qdrant Cloud
+- [ ] Deploy the application
+- [ ] Record a project demonstration
+
+## Project Structure
 
 ```text
 version-aware-doc-assistant/
 ├── app/
 │   ├── __init__.py
-│   └── main.py
+│   ├── ingestion.py
+│   ├── main.py
+│   ├── models.py
+│   └── vector_store.py
 ├── data/
 │   └── examplecloud/
 │       ├── v1/
@@ -99,81 +164,143 @@ version-aware-doc-assistant/
 │           └── api-guide.md
 ├── tests/
 │   ├── __init__.py
-│   └── test_health.py
+│   ├── test_health.py
+│   ├── test_ingestion.py
+│   └── test_retrieval.py
 ├── .gitignore
 ├── README.md
 └── requirements.txt
 ```
 
-## Run locally
+## Technology
 
-### 1. Create and activate a virtual environment
+| Area | Technology | Purpose |
+|---|---|---|
+| Language | Python 3.12 | Application and retrieval logic |
+| API | FastAPI | Validated backend endpoints |
+| Document processing | Custom Markdown parser | Heading-aware chunk creation |
+| Embeddings | FastEmbed | Lightweight local embedding generation |
+| Vector database | Qdrant | Vector storage, filtering, and similarity search |
+| Similarity measure | Cosine similarity | Semantic ranking |
+| Testing | Pytest | Unit and retrieval-isolation tests |
+| Generation | LLM API | Grounded answers and agent decisions |
+| Deployment | Render and Qdrant Cloud | Planned hosted architecture |
 
-```powershell
+## Run Locally
+
+### 1. Create a virtual environment
+
+```cmd
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1
 ```
 
-### 2. Install dependencies
+### 2. Activate it in Command Prompt
 
-```powershell
+```cmd
+.venv\Scripts\activate.bat
+```
+
+### 3. Install dependencies
+
+```cmd
 pip install -r requirements.txt
 ```
 
-### 3. Start the API
+The embedding model may be downloaded during the first retrieval test.
 
-```powershell
+### 4. Run the tests
+
+```cmd
+pytest -v
+```
+
+### 5. Start the API
+
+```cmd
 uvicorn app.main:app --reload
 ```
 
-### 4. Open the application
+Open:
 
 - Health check: http://127.0.0.1:8000/health
 - Interactive API documentation: http://127.0.0.1:8000/docs
 
-## Run tests
+## Key Design Decisions
 
-```powershell
-pytest
-```
+### Heading-aware chunking
 
-## Planned technology
+Sections are split at level-two Markdown headings instead of arbitrary character boundaries. This preserves topic meaning and keeps related sentences together.
 
-| Area | Technology |
-|---|---|
-| Language | Python |
-| API | FastAPI |
-| Testing | Pytest |
-| Document format | Markdown initially; PDF later |
-| Vector storage | To be selected |
-| LLM and embeddings | Provider-independent design |
-| Evaluation | Custom tests, followed by Ragas |
+### Metadata on every chunk
 
-## Evaluation goals
+Each chunk stores its product, version, source, title, and section. Because chunks are retrieved independently, each one must remain independently filterable and traceable.
 
-The finished system will measure:
+### Filtering before semantic ranking
+
+Product and version restrictions are enforced inside the Qdrant query. Wrong-version content is excluded before it can reach answer generation.
+
+### Deterministic chunk identifiers
+
+Chunk IDs are derived from stable metadata. Reprocessing the same logical section produces the same identifier and helps prevent duplicate vector records.
+
+### Local Qdrant during development
+
+Automated tests use Qdrant’s in-memory mode. This keeps tests isolated, reproducible, and independent of cloud credentials. The deployed application will use Qdrant Cloud through the same client abstraction.
+
+### Controlled RAG before agents
+
+The deterministic retrieval and generation pipeline is implemented and evaluated before agent behavior is added. This provides a measurable baseline and keeps agent tools bounded.
+
+## Testing Strategy
+
+The current tests verify:
+
+- All expected Markdown sections are processed
+- Version-specific facts remain distinct
+- Chunk IDs are unique
+- Source metadata is preserved
+- All chunks are indexed
+- Semantically related questions retrieve the expected section
+- v1 searches return only v1 chunks
+- v2 searches return only v2 chunks
+- Unknown products return no results
+- Invalid search inputs are rejected
+
+## Evaluation Goals
+
+The completed system will measure:
 
 - Version-isolation accuracy
 - Retrieval recall at `k`
+- Top-result accuracy
 - Citation correctness
 - Answer correctness
 - Proper abstention rate
+- Agent tool-selection accuracy
 - Response latency
 - Approximate model cost
 
-## Why this project matters
+## Why This Project Matters
 
-This project goes beyond a basic “chat with documents” demonstration. Its central challenge is **metadata-aware retrieval**: ensuring the model receives only documentation belonging to the selected version.
+This project goes beyond a basic “chat with documents” demonstration. Its central challenge is reliable, metadata-aware retrieval across conflicting documentation versions.
 
-The same design can later support:
+The same architecture can later support:
 
 - Product editions
+- Programming-language versions
 - Customer or tenant isolation
 - Department-level permissions
 - Role-based access control
 - Time-sensitive policies
-- Multiple programming-language versions
+- Confidentiality classifications
 
-## License
+## Current Limitations
 
-This project is intended for educational and portfolio use.
+- The dataset is intentionally small and synthetic
+- Only Markdown documents are supported
+- Qdrant currently runs locally during development
+- Answer generation and citations are not yet implemented
+- Retrieval thresholds require evaluation
+- Agent behavior and deployment are still planned
+
+These limitations are being addressed incrementally so that each layer can be tested independently.
