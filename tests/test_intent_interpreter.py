@@ -38,6 +38,7 @@ def test_structured_intent_accepts_valid_shape() -> None:
     intent = StructuredIntent(
         requested_versions=["v1", "v2"],
         comparison_requested=True,
+        focused_question="How does authentication work?",
     )
 
     assert intent.requested_versions == ["v1", "v2"]
@@ -48,6 +49,7 @@ def test_structured_intent_represents_missing_version() -> None:
     intent = StructuredIntent(
         requested_versions=[],
         comparison_requested=False,
+        focused_question="How does authentication work?",
     )
 
     assert intent.requested_versions == []

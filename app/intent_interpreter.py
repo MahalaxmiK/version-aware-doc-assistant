@@ -15,6 +15,7 @@ class InterpretedIntent:
 
     requested_versions: tuple[str, ...]
     comparison_requested: bool
+    focused_question: str
 
 
 class IntentInterpreter(Protocol):
@@ -46,6 +47,17 @@ class StructuredIntent(BaseModel):
         )
     )
 
+    focused_question: str = Field(
+        min_length=1,
+        max_length=500,
+        description=(
+            "A standalone technical question for retrieval and "
+            "per-version answering. Remove comparison instructions "
+            "and version identifiers while preserving the topic. "
+            "Do not answer the question."
+        ),
+    )
+
 
 SYSTEM_INSTRUCTIONS = """
 You interpret routing intent for a documentation assistant.
@@ -58,6 +70,9 @@ Rules:
    to compare, contrast, or identify differences between versions.
 5. Do not answer the user's technical question.
 6. Do not retrieve documents or generate citations.
+7. Rewrite the request as one focused, standalone technical question
+   for retrieval. Remove version names and comparison language, but
+   preserve the user's technical topic.
 """.strip()
 
 
@@ -112,6 +127,7 @@ class OpenAIIntentInterpreter:
             return InterpretedIntent(
                 requested_versions=(),
                 comparison_requested=False,
+                focused_question=question.strip(),
             )
 
         return InterpretedIntent(
@@ -121,6 +137,7 @@ class OpenAIIntentInterpreter:
             comparison_requested=(
                 parsed.comparison_requested
             ),
+            focused_question=parsed.focused_question.strip(),
         )
 
     @staticmethod

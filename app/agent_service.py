@@ -80,8 +80,15 @@ class AgentService:
             available_versions=available_versions,
         )
 
+        focused_question = intent.focused_question.strip()
+
+        if not focused_question:
+            raise ValueError(
+                "Interpreted focused question cannot be empty"
+            )
+
         return self.run(
-            question=normalized_question,
+            question=focused_question,
             product=normalized_product,
             requested_versions=intent.requested_versions,
             comparison_requested=(

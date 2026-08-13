@@ -5,6 +5,9 @@ from app.intent_interpreter import InterpretedIntent
 from app.rag_service import RAGResponse
 
 
+FOCUSED_QUESTION = "How does authentication work?"
+
+
 class FakeIntentInterpreter:
     """Return predetermined intent without calling OpenAI."""
 
@@ -92,6 +95,7 @@ def test_interpreted_single_version_executes_answer() -> None:
         InterpretedIntent(
             requested_versions=("v2",),
             comparison_requested=False,
+            focused_question=FOCUSED_QUESTION,
         )
     )
 
@@ -112,7 +116,7 @@ def test_interpreted_single_version_executes_answer() -> None:
 
     assert rag_service.calls == [
         (
-            "How do I authenticate in v2?",
+            FOCUSED_QUESTION,
             "examplecloud",
             "v2",
         )
@@ -124,6 +128,7 @@ def test_missing_version_returns_clarification() -> None:
         InterpretedIntent(
             requested_versions=(),
             comparison_requested=False,
+            focused_question=FOCUSED_QUESTION,
         )
     )
 
@@ -145,6 +150,7 @@ def test_interpreted_comparison_runs_isolated_searches() -> None:
         InterpretedIntent(
             requested_versions=("v1", "v2"),
             comparison_requested=True,
+            focused_question=FOCUSED_QUESTION,
         )
     )
 
@@ -160,16 +166,38 @@ def test_interpreted_comparison_runs_isolated_searches() -> None:
 
     assert rag_service.calls == [
         (
-            "Compare authentication in v1 and v2.",
+            FOCUSED_QUESTION,
             "examplecloud",
             "v1",
         ),
         (
-            "Compare authentication in v1 and v2.",
+            FOCUSED_QUESTION,
             "examplecloud",
             "v2",
         ),
     ]
+
+
+def test_uses_focused_question_for_every_version() -> None:
+    service, _, rag_service = make_service(
+        InterpretedIntent(
+            requested_versions=("v1", "v2"),
+            comparison_requested=True,
+            focused_question=FOCUSED_QUESTION,
+        )
+    )
+
+    service.run_natural_language(
+        question="Compare authentication between v1 and v2.",
+        product="examplecloud",
+    )
+
+    assert len(rag_service.calls) == 2
+
+    assert all(
+        call[0] == FOCUSED_QUESTION
+        for call in rag_service.calls
+    )
 
 
 def test_router_rejects_interpreter_invented_version() -> None:
@@ -177,6 +205,7 @@ def test_router_rejects_interpreter_invented_version() -> None:
         InterpretedIntent(
             requested_versions=("v99",),
             comparison_requested=False,
+            focused_question=FOCUSED_QUESTION,
         )
     )
 
@@ -200,6 +229,7 @@ def test_comparison_with_one_version_clarifies() -> None:
         InterpretedIntent(
             requested_versions=("v2",),
             comparison_requested=True,
+            focused_question=FOCUSED_QUESTION,
         )
     )
 
@@ -220,6 +250,7 @@ def test_rejects_unknown_product_before_interpretation() -> None:
         InterpretedIntent(
             requested_versions=("v1",),
             comparison_requested=False,
+            focused_question=FOCUSED_QUESTION,
         )
     )
 
