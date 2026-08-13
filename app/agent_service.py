@@ -3,6 +3,7 @@ from typing import Protocol
 
 from app.agent_models import AgentAction
 from app.agent_router import AgentRouter
+from app.intent_interpreter import IntentInterpreter
 from app.rag_service import RAGResponse
 
 
@@ -36,15 +37,57 @@ class AgentResponse:
 
 
 class AgentService:
-    """Route and execute bounded documentation workflows."""
+    """Interpret, route, and execute bounded workflows."""
 
     def __init__(
         self,
         router: AgentRouter,
         rag_service: RAGAnswerer,
+        intent_interpreter: IntentInterpreter | None = None,
     ) -> None:
         self.router = router
         self.rag_service = rag_service
+        self.intent_interpreter = intent_interpreter
+
+    def run_natural_language(
+        self,
+        question: str,
+        product: str,
+    ) -> AgentResponse:
+        """Interpret natural language, then execute a safe route."""
+
+        normalized_question = question.strip()
+        normalized_product = product.strip()
+
+        if not normalized_question:
+            raise ValueError("Question cannot be empty")
+
+        if not normalized_product:
+            raise ValueError("Product cannot be empty")
+
+        if self.intent_interpreter is None:
+            raise RuntimeError(
+                "Natural-language intent interpreter is not configured"
+            )
+
+        available_versions = self._available_versions(
+            normalized_product
+        )
+
+        intent = self.intent_interpreter.interpret(
+            question=normalized_question,
+            product=normalized_product,
+            available_versions=available_versions,
+        )
+
+        return self.run(
+            question=normalized_question,
+            product=normalized_product,
+            requested_versions=intent.requested_versions,
+            comparison_requested=(
+                intent.comparison_requested
+            ),
+        )
 
     def run(
         self,
@@ -90,3 +133,14 @@ class AgentService:
             message=None,
             version_answers=version_answers,
         )
+
+    def _available_versions(
+        self,
+        product: str,
+    ) -> tuple[str, ...]:
+        """Return configured versions for intent interpretation."""
+
+        if product not in self.router.available_versions:
+            raise ValueError(f"Unknown product: {product}")
+
+        return self.router.available_versions[product]
