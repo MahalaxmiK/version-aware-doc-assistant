@@ -1,0 +1,86 @@
+[
+  {
+    "id": "hard-examplecloud-v1-throttling",
+    "query": "The server told my integration to slow down and returned 429. Which policy caused this?",
+    "product": "examplecloud",
+    "version": "v1",
+    "expected_section": "Request limits"
+  },
+  {
+    "id": "hard-examplecloud-v2-portable-data",
+    "query": "Is there a machine-readable download option other than comma-separated files?",
+    "product": "examplecloud",
+    "version": "v2",
+    "expected_section": "Data export"
+  },
+  {
+    "id": "hard-examplecloud-v2-client-identity",
+    "query": "What replaced the long-lived shared credential used by older clients?",
+    "product": "examplecloud",
+    "version": "v2",
+    "expected_section": "Authentication"
+  },
+  {
+    "id": "hard-examplecloud-v1-json-availability",
+    "query": "Can this release produce structured JSON output for downstream processing?",
+    "product": "examplecloud",
+    "version": "v1",
+    "expected_section": "Data export"
+  },
+  {
+    "id": "hard-paymentcloud-v2-partial-reversal",
+    "query": "A customer returned one item. Can I reverse only part of the original charge?",
+    "product": "paymentcloud",
+    "version": "v2",
+    "expected_section": "Refunds"
+  },
+  {
+    "id": "hard-paymentcloud-v1-large-purchase",
+    "query": "Will a single purchase of $7,500 be accepted by this release?",
+    "product": "paymentcloud",
+    "version": "v1",
+    "expected_section": "Transaction limits"
+  },
+  {
+    "id": "hard-paymentcloud-v1-secret-header",
+    "query": "Which proprietary header carries the secret used to authorize a payment request?",
+    "product": "paymentcloud",
+    "version": "v1",
+    "expected_section": "Authentication"
+  },
+  {
+    "id": "hard-paymentcloud-v2-enterprise-approval",
+    "query": "At what payment amount would I need approval for a higher processing ceiling?",
+    "product": "paymentcloud",
+    "version": "v2",
+    "expected_section": "Transaction limits"
+  },
+  {
+    "id": "hard-supportdesk-v2-federated-login",
+    "query": "Can employees use the corporate identity provider and require a second verification factor?",
+    "product": "supportdesk",
+    "version": "v2",
+    "expected_section": "User authentication"
+  },
+  {
+    "id": "hard-supportdesk-v1-audit-history",
+    "query": "Would an auditor still find a resolved ticket four months after it was closed?",
+    "product": "supportdesk",
+    "version": "v1",
+    "expected_section": "Ticket retention"
+  },
+  {
+    "id": "hard-supportdesk-v2-diagnostic-upload",
+    "query": "Can an agent attach a 40 MB diagnostic archive to a customer issue?",
+    "product": "supportdesk",
+    "version": "v2",
+    "expected_section": "File attachments"
+  },
+  {
+    "id": "hard-supportdesk-v1-large-log-file",
+    "query": "What restriction applies when an agent tries to upload a log larger than 10 MB?",
+    "product": "supportdesk",
+    "version": "v1",
+    "expected_section": "File attachments"
+  }
+]

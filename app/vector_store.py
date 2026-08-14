@@ -7,7 +7,7 @@ from app.models import DocumentChunk
 
 
 DEFAULT_COLLECTION_NAME = "documentation"
-DEFAULT_EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+DEFAULT_EMBEDDING_MODEL = "BAAI/bge-small-en-v1.5"
 
 
 @dataclass(frozen=True)
