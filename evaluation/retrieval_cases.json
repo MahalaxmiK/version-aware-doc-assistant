@@ -1,0 +1,86 @@
+[
+  {
+    "id": "examplecloud-v1-authentication",
+    "query": "Which credential must I include when calling the API?",
+    "product": "examplecloud",
+    "version": "v1",
+    "expected_section": "Authentication"
+  },
+  {
+    "id": "examplecloud-v2-authentication",
+    "query": "How should clients prove their identity?",
+    "product": "examplecloud",
+    "version": "v2",
+    "expected_section": "Authentication"
+  },
+  {
+    "id": "examplecloud-v1-rate-limit",
+    "query": "What happens when I make too many requests?",
+    "product": "examplecloud",
+    "version": "v1",
+    "expected_section": "Request limits"
+  },
+  {
+    "id": "examplecloud-v2-export",
+    "query": "Can I download my information as JSON?",
+    "product": "examplecloud",
+    "version": "v2",
+    "expected_section": "Data export"
+  },
+  {
+    "id": "paymentcloud-v1-authentication",
+    "query": "What must be placed in the request header?",
+    "product": "paymentcloud",
+    "version": "v1",
+    "expected_section": "Authentication"
+  },
+  {
+    "id": "paymentcloud-v2-authentication",
+    "query": "Does the payment API accept OAuth access tokens?",
+    "product": "paymentcloud",
+    "version": "v2",
+    "expected_section": "Authentication"
+  },
+  {
+    "id": "paymentcloud-v1-transaction-limit",
+    "query": "What is the largest payment I can process?",
+    "product": "paymentcloud",
+    "version": "v1",
+    "expected_section": "Transaction limits"
+  },
+  {
+    "id": "paymentcloud-v2-refunds",
+    "query": "Can I return only part of a customer's payment?",
+    "product": "paymentcloud",
+    "version": "v2",
+    "expected_section": "Refunds"
+  },
+  {
+    "id": "supportdesk-v1-authentication",
+    "query": "How do support agents sign in?",
+    "product": "supportdesk",
+    "version": "v1",
+    "expected_section": "User authentication"
+  },
+  {
+    "id": "supportdesk-v2-authentication",
+    "query": "Can employees sign in using the company identity provider?",
+    "product": "supportdesk",
+    "version": "v2",
+    "expected_section": "User authentication"
+  },
+  {
+    "id": "supportdesk-v1-retention",
+    "query": "How long are resolved tickets kept?",
+    "product": "supportdesk",
+    "version": "v1",
+    "expected_section": "Ticket retention"
+  },
+  {
+    "id": "supportdesk-v2-attachments",
+    "query": "What is the maximum upload size for a ticket?",
+    "product": "supportdesk",
+    "version": "v2",
+    "expected_section": "File attachments"
+  }
+]

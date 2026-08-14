@@ -31,7 +31,7 @@ def test_indexes_all_chunks(
         vector_store.collection_name
     )
 
-    assert collection.points_count == 6
+    assert collection.points_count == 18
 
 
 def test_retrieves_authentication_by_meaning(
