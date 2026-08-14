@@ -1,15 +1,16 @@
+from pathlib import Path
 from typing import Annotated
 
 from fastapi import Depends, FastAPI
+from fastapi.responses import FileResponse
 
 from app.agent_service import AgentService
-
 from app.api_models import (
+    AgentQuestionRequest,
+    AgentQuestionResponse,
     CitationResponse,
     QuestionRequest,
     QuestionResponse,
-    AgentQuestionRequest,
-    AgentQuestionResponse,
     VersionAnswerResponse,
 )
 from app.dependencies import (
@@ -19,14 +20,29 @@ from app.dependencies import (
 from app.rag_service import RAGService
 
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+UI_PATH = PROJECT_ROOT / "static" / "index.html"
+
+
 app = FastAPI(
     title="Version-Aware Documentation Assistant",
     description=(
         "A controlled RAG service that answers technical questions "
         "using documentation from a selected product version."
     ),
-    version="0.2.0",
+    version="0.3.0",
 )
+
+
+@app.get(
+    "/",
+    include_in_schema=False,
+    response_class=FileResponse,
+)
+def application_ui() -> FileResponse:
+    """Serve the browser-based documentation assistant."""
+
+    return FileResponse(UI_PATH)
 
 
 @app.get("/health")
@@ -75,6 +91,7 @@ def answer_question(
         answer=result.answer,
         citations=citations,
     )
+
 
 @app.post(
     "/agent/questions",
