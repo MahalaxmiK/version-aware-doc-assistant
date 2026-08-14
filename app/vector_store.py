@@ -7,7 +7,7 @@ from app.models import DocumentChunk
 
 
 DEFAULT_COLLECTION_NAME = "documentation"
-DEFAULT_EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+DEFAULT_EMBEDDING_MODEL = "BAAI/bge-small-en-v1.5"
 
 
 @dataclass(frozen=True)
@@ -32,22 +32,29 @@ class VectorStore:
         self.embedding_model = embedding_model
 
     def create_collection(self) -> None:
-        """Create the vector collection if it does not already exist."""
+        """Create the collection and required metadata indexes."""
 
-        if self.client.collection_exists(self.collection_name):
-            return
+        if not self.client.collection_exists(
+            self.collection_name
+        ):
+            vector_size = self.client.get_embedding_size(
+                self.embedding_model
+            )
 
-        vector_size = self.client.get_embedding_size(
-            self.embedding_model
-        )
+            self.client.create_collection(
+                collection_name=self.collection_name,
+                vectors_config=models.VectorParams(
+                    size=vector_size,
+                    distance=models.Distance.COSINE,
+                ),
+            )
 
-        self.client.create_collection(
-            collection_name=self.collection_name,
-            vectors_config=models.VectorParams(
-                size=vector_size,
-                distance=models.Distance.COSINE,
-            ),
-        )
+        for field_name in ("product", "version"):
+            self.client.create_payload_index(
+                collection_name=self.collection_name,
+                field_name=field_name,
+                field_schema=models.PayloadSchemaType.KEYWORD,
+            )
 
     def index_chunks(
         self,

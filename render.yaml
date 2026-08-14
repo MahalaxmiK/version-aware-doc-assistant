@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: version-aware-doc-assistant
+    runtime: python
+    plan: free
+    branch: main
+
+    buildCommand: pip install -r requirements.txt
+
+    startCommand: >
+      uvicorn app.main:app
+      --host 0.0.0.0
+      --port $PORT
+
+    healthCheckPath: /health
+    autoDeploy: true
+
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.9
+
+      - key: OPENAI_API_KEY
+        sync: false
+
+      - key: OPENAI_MODEL
+        value: gpt-5.6-luna
+
+      - key: QDRANT_URL
+        sync: false
+
+      - key: QDRANT_API_KEY
+        sync: false
+
+      - key: QDRANT_COLLECTION_NAME
+        value: documentation

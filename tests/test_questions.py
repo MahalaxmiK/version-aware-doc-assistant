@@ -113,25 +113,43 @@ def test_questions_endpoint_passes_scope_to_service() -> None:
 
 
 def test_questions_endpoint_rejects_blank_question() -> None:
-    response = client.post(
-        "/questions",
-        json={
-            "question": "   ",
-            "product": "examplecloud",
-            "version": "v2",
-        },
+    stub_service = StubRAGService()
+
+    app.dependency_overrides[get_rag_service] = (
+        lambda: stub_service
     )
+
+    try:
+        response = client.post(
+            "/questions",
+            json={
+                "question": "   ",
+                "product": "examplecloud",
+                "version": "v2",
+            },
+        )
+    finally:
+        app.dependency_overrides.clear()
 
     assert response.status_code == 422
 
 
 def test_questions_endpoint_requires_version() -> None:
-    response = client.post(
-        "/questions",
-        json={
-            "question": "How do I authenticate?",
-            "product": "examplecloud",
-        },
+    stub_service = StubRAGService()
+
+    app.dependency_overrides[get_rag_service] = (
+        lambda: stub_service
     )
+
+    try:
+        response = client.post(
+            "/questions",
+            json={
+                "question": "How do I authenticate?",
+                "product": "examplecloud",
+            },
+        )
+    finally:
+        app.dependency_overrides.clear()
 
     assert response.status_code == 422
