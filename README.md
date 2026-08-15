@@ -14,7 +14,7 @@ A controlled, agentic retrieval-augmented generation application that prevents t
 ![Qdrant](https://img.shields.io/badge/Qdrant-Cloud-DC244C?logo=qdrant&logoColor=white)
 ![Hugging Face](https://img.shields.io/badge/Hugging_Face-BGE_Embeddings-FFD21E?logo=huggingface&logoColor=black)
 ![OpenAI](https://img.shields.io/badge/OpenAI-Agentic_RAG-412991?logo=openai&logoColor=white)
-![Pytest](https://img.shields.io/badge/Tests-77_Passing-0A9EDC?logo=pytest&logoColor=white)
+![Pytest](https://img.shields.io/badge/Tests-80_Passing-0A9EDC?logo=pytest&logoColor=white)
 ![Render](https://img.shields.io/badge/Render-Deployed-46E3B7?logo=render&logoColor=black)
 ![Status](https://img.shields.io/badge/Status-Live-brightgreen)
 
@@ -167,6 +167,7 @@ Try it in the [live application](https://version-aware-doc-assistant.onrender.co
 - Missing, duplicate, or invented citation IDs are rejected.
 - Unsupported questions produce an explicit abstention.
 - Automated tests replace paid external calls with controlled fakes.
+- Plain-text server failures are converted into safe, user-friendly UI errors.
 
 ## Retrieval Evaluation
 
@@ -196,6 +197,33 @@ A reranker was intentionally not added because the challenge benchmark showed no
 
 These measurements describe the included synthetic evaluation dataset and are not claims of universal model performance.
 
+## Agent Workflow Evaluation
+
+Twelve labeled behavioral cases evaluate the deterministic agent and RAG workflow contract.
+
+The cases cover:
+
+- Correct single-version routing
+- Missing-version clarification
+- Version comparison
+- Invalid product rejection
+- Invalid version rejection
+- Unsupported-question abstention
+- Citation presence
+- Citation product and version correctness
+
+| Metric | Result |
+|---|---:|
+| Workflow accuracy | 100% |
+| Routing accuracy | 100% |
+| Abstention accuracy | 100% |
+| Citation presence accuracy | 100% |
+| Citation scope accuracy | 100% |
+
+This evaluation uses controlled RAG responses so it remains deterministic, free from paid API calls, and suitable for automated testing.
+
+Live deployed smoke tests separately verify natural-language interpretation and end-to-end OpenAI behavior.
+
 ## Technology
 
 | Area | Technology | Purpose |
@@ -222,6 +250,7 @@ version-aware-doc-assistant/
 |   `-- workflows/
 |       `-- ci.yml
 |-- app/
+|   |-- agent_evaluation.py
 |   |-- agent_models.py
 |   |-- agent_router.py
 |   |-- agent_service.py
@@ -241,10 +270,12 @@ version-aware-doc-assistant/
 |   |-- paymentcloud/
 |   `-- supportdesk/
 |-- evaluation/
-|   |-- retrieval_cases.json
-|   `-- hard_retrieval_cases.json
+|   |-- agent_cases.json
+|   |-- hard_retrieval_cases.json
+|   `-- retrieval_cases.json
 |-- scripts/
 |   |-- compare_embeddings.py
+|   |-- evaluate_agent.py
 |   `-- evaluate_retrieval.py
 |-- static/
 |   `-- index.html
@@ -318,6 +349,12 @@ Run the baseline retrieval evaluation:
 python -m scripts.evaluate_retrieval
 ```
 
+Run the bounded agent workflow evaluation:
+
+```cmd
+python -m scripts.evaluate_agent
+```
+
 Compare Hugging Face embedding models:
 
 ```cmd
@@ -368,6 +405,10 @@ Two Hugging Face embedding models were compared using the same labeled questions
 
 Reranking was evaluated as an architectural option but was not added because the current challenge set already achieved perfect Top-1 retrieval. Additional complexity was not justified by a measurable improvement.
 
+### Deterministic evaluation boundaries
+
+Retrieval and agent workflow contracts are evaluated with labeled datasets and controlled dependencies. Live smoke tests are used separately for nondeterministic end-to-end LLM behavior.
+
 ## Deployment
 
 The application is deployed as one Render web service containing both the FastAPI API and browser UI.
@@ -377,6 +418,19 @@ Qdrant Cloud provides persistent vector storage independently of the Render inst
 Render automatically deploys changes from `main`, while GitHub Actions verifies the test suite.
 
 [🚀 Open the deployed assistant](https://version-aware-doc-assistant.onrender.com)
+
+## Final Validation
+
+The deployed application has been smoke-tested for:
+
+- `/health`
+- Single-version answering
+- Version comparison
+- Missing-version clarification
+- Unsupported-question abstention
+- Citation presence and version correctness
+- Interactive API documentation
+- Friendly server-error handling
 
 ## Current Limitations
 
