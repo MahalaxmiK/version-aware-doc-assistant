@@ -8,6 +8,7 @@ A controlled, agentic retrieval-augmented generation application that prevents t
 
 [![Live Demo](https://img.shields.io/badge/Live_Demo-Open_Application-38BDF8)](https://version-aware-doc-assistant.onrender.com)
 [![CI](https://github.com/MahalaxmiK/version-aware-doc-assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/MahalaxmiK/version-aware-doc-assistant/actions/workflows/ci.yml)
+[![Demo Video](https://img.shields.io/badge/Demo_Video-Watch_Recording-A855F7?logo=video&logoColor=white)](https://screenrec.com/share/CzGPht8w7A)
 
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-API-009688?logo=fastapi&logoColor=white)
@@ -19,6 +20,7 @@ A controlled, agentic retrieval-augmented generation application that prevents t
 ![Status](https://img.shields.io/badge/Status-Live-brightgreen)
 
 [🚀 Live Application](https://version-aware-doc-assistant.onrender.com) ·
+[🎥 Watch Demo](https://screenrec.com/share/CzGPht8w7A) ·
 [📖 API Documentation](https://version-aware-doc-assistant.onrender.com/docs)
 
 </div>
@@ -150,6 +152,19 @@ Source: paymentcloud/v2/api-guide.md - Refunds
 ```
 
 Try it in the [live application](https://version-aware-doc-assistant.onrender.com).
+
+## Video Demonstration
+
+Watch the short project walkthrough to see:
+
+- The deployed browser interface
+- A version-comparison workflow with isolated answers
+- Grounded citations tied to the selected product and version
+- Missing-version clarification and safe abstention
+- Qdrant Cloud vector storage
+- GitHub Actions continuous integration
+
+[🎥 Watch the 2–3 minute project demonstration](https://screenrec.com/share/CzGPht8w7A)
 
 ## Safety and Reliability Controls
 
