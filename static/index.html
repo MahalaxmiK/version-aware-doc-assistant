@@ -10,6 +10,7 @@
     name="description"
     content="Version-aware agentic RAG documentation assistant"
   >
+
   <title>Version-Aware Documentation Assistant</title>
 
   <style>
@@ -22,7 +23,6 @@
       --text: #f8fafc;
       --muted: #a9b7cb;
       --primary: #38bdf8;
-      --primary-dark: #0284c7;
       --accent: #a78bfa;
       --success: #34d399;
       --warning: #fbbf24;
@@ -126,7 +126,9 @@
 
     .workspace {
       display: grid;
-      grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+      grid-template-columns:
+        minmax(0, 1.05fr)
+        minmax(0, 0.95fr);
       gap: 20px;
       align-items: start;
     }
@@ -424,7 +426,9 @@
     <section class="workspace">
       <form id="question-form" class="panel">
         <div class="panel-header">
-          <h2 class="panel-title">Ask the documentation agent</h2>
+          <h2 class="panel-title">
+            Ask the documentation agent
+          </h2>
 
           <span class="status">
             <span class="status-dot"></span>
@@ -433,6 +437,7 @@
         </div>
 
         <label for="product">Product</label>
+
         <select id="product" name="product">
           <option value="examplecloud">ExampleCloud</option>
           <option value="paymentcloud">PaymentCloud</option>
@@ -440,6 +445,7 @@
         </select>
 
         <label for="question">Question</label>
+
         <textarea
           id="question"
           name="question"
@@ -499,6 +505,7 @@
         <div id="result" class="empty-state">
           <div>
             <div class="empty-icon">◈</div>
+
             <div>
               Your answer, workflow decision, and citations
               will appear here.
@@ -546,7 +553,9 @@
 
     function renderVersionAnswer(item) {
       const stateClass = item.answered ? "" : "abstained";
-      const stateLabel = item.answered ? "Grounded" : "Abstained";
+      const stateLabel = item.answered
+        ? "Grounded"
+        : "Abstained";
 
       const citations = item.citations.length
         ? `
@@ -562,6 +571,7 @@
             <span class="version-name">
               ${escapeHtml(item.version)}
             </span>
+
             <span class="answer-state ${stateClass}">
               ${stateLabel}
             </span>
@@ -582,7 +592,11 @@
       );
 
       const message = data.message
-        ? `<div class="message">${escapeHtml(data.message)}</div>`
+        ? `
+          <div class="message">
+            ${escapeHtml(data.message)}
+          </div>
+        `
         : "";
 
       const answers = data.version_answers
@@ -590,6 +604,7 @@
         .join("");
 
       resultContainer.className = "";
+
       resultContainer.innerHTML = `
         <div class="action-badge">${action}</div>
         ${message}
@@ -599,11 +614,61 @@
 
     function renderError(message) {
       resultContainer.className = "";
+
       resultContainer.innerHTML = `
         <div class="error">
           ${escapeHtml(message)}
         </div>
       `;
+    }
+
+    async function readResponse(response) {
+      const responseText = await response.text();
+
+      if (!responseText) {
+        if (!response.ok) {
+          throw new Error(
+            `The service returned an error (${response.status}). ` +
+            "Please try again."
+          );
+        }
+
+        return {};
+      }
+
+      try {
+        return JSON.parse(responseText);
+      } catch {
+        if (!response.ok) {
+          throw new Error(
+            `The service returned an error (${response.status}). ` +
+            "Please try again."
+          );
+        }
+
+        throw new Error(
+          "The service returned an unexpected response. " +
+          "Please try again."
+        );
+      }
+    }
+
+    function errorDetail(data) {
+      if (typeof data.detail === "string") {
+        return data.detail;
+      }
+
+      if (Array.isArray(data.detail)) {
+        const messages = data.detail
+          .map((item) => item.msg)
+          .filter(Boolean);
+
+        if (messages.length) {
+          return messages.join(" ");
+        }
+      }
+
+      return "The request could not be completed.";
     }
 
     document
@@ -627,10 +692,12 @@
       }
 
       submitButton.disabled = true;
-      submitButton.textContent = "Running bounded workflow...";
+      submitButton.textContent =
+        "Running bounded workflow...";
 
       resultContainer.className = "empty-state";
-      resultContainer.innerHTML = "<div>Retrieving evidence...</div>";
+      resultContainer.innerHTML =
+        "<div>Retrieving evidence...</div>";
 
       try {
         const response = await fetch("/agent/questions", {
@@ -644,21 +711,19 @@
           })
         });
 
-        const data = await response.json();
+        const data = await readResponse(response);
 
         if (!response.ok) {
-          const detail = data.detail
-            ? JSON.stringify(data.detail)
-            : "The request could not be completed.";
-
-          throw new Error(detail);
+          throw new Error(errorDetail(data));
         }
 
         renderResponse(data);
       } catch (error) {
-        renderError(
-          error.message || "An unexpected error occurred."
-        );
+        const message = error instanceof Error
+          ? error.message
+          : "An unexpected error occurred.";
+
+        renderError(message);
       } finally {
         submitButton.disabled = false;
         submitButton.textContent = "Ask agent";
@@ -666,4 +731,4 @@
     });
   </script>
 </body>
-</html
+</html>
