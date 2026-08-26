@@ -1,23 +1,19 @@
 services:
   - type: web
     name: version-aware-doc-assistant
-    runtime: python
+    runtime: docker
     plan: free
     branch: main
-
-    buildCommand: pip install -r requirements.txt
-
-    startCommand: >
-      uvicorn app.main:app
-      --host 0.0.0.0
-      --port $PORT
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
 
     healthCheckPath: /health
+    maxShutdownDelaySeconds: 30
     autoDeploy: true
 
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.12.9
+      - key: PORT
+        value: "8000"
 
       - key: OPENAI_API_KEY
         sync: false
