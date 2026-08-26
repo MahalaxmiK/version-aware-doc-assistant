@@ -39,3 +39,54 @@ jobs:
 
       - name: Run automated tests
         run: python -m pytest -q
+
+  container:
+    name: Production container smoke test
+    runs-on: ubuntu-latest
+    needs: test
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build production image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: version-aware-doc-assistant:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Start container and wait for health endpoint
+        shell: bash
+        run: |
+          docker run --detach \
+            --name version-aware-doc-assistant-ci \
+            --publish 8001:8000 \
+            version-aware-doc-assistant:ci
+
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8001/health; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          docker logs version-aware-doc-assistant-ci
+          exit 1
+
+      - name: Verify least-privilege container user
+        run: test "$(docker exec version-aware-doc-assistant-ci whoami)" = "app"
+
+      - name: Show container logs on failure
+        if: failure()
+        run: docker logs version-aware-doc-assistant-ci || true
+
+      - name: Remove test container
+        if: always()
+        run: docker rm --force version-aware-doc-assistant-ci || true
