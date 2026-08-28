@@ -15,7 +15,9 @@ A controlled, agentic retrieval-augmented generation application that prevents t
 ![Qdrant](https://img.shields.io/badge/Qdrant-Cloud-DC244C?logo=qdrant&logoColor=white)
 ![Hugging Face](https://img.shields.io/badge/Hugging_Face-BGE_Embeddings-FFD21E?logo=huggingface&logoColor=black)
 ![OpenAI](https://img.shields.io/badge/OpenAI-Agentic_RAG-412991?logo=openai&logoColor=white)
-![Pytest](https://img.shields.io/badge/Tests-80_Passing-0A9EDC?logo=pytest&logoColor=white)
+![LangSmith](https://img.shields.io/badge/LangSmith-Observability-1C3C3C?logo=langchain&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Production_Container-2496ED?logo=docker&logoColor=white)
+![Pytest](https://img.shields.io/badge/Tests-84_Passing-0A9EDC?logo=pytest&logoColor=white)
 ![Render](https://img.shields.io/badge/Render-Deployed-46E3B7?logo=render&logoColor=black)
 ![Status](https://img.shields.io/badge/Status-Live-brightgreen)
 
@@ -57,7 +59,10 @@ The assistant can answer from one selected version, request clarification when a
 - Natural-language version comparison
 - Browser-based user interface
 - Automated evaluation and GitHub Actions CI
-- Render deployment
+- Privacy-conscious LangSmith workflow tracing
+- Non-root production Docker container
+- Container build and smoke testing in CI
+- Docker deployment on Render
 
 ## Architecture
 
@@ -83,6 +88,11 @@ flowchart LR
     K --> L[Structured generation]
     L --> M[Citation validation]
     M --> N[Grounded response]
+
+    E -. privacy-safe trace .-> O[LangSmith observability]
+    I -. retrieval and RAG spans .-> O
+    J -. isolated comparison spans .-> O
+    L -. generation outcome .-> O
 ```
 
 Each layer has a focused responsibility:
@@ -183,6 +193,8 @@ Watch the short project walkthrough to see:
 - Unsupported questions produce an explicit abstention.
 - Automated tests replace paid external calls with controlled fakes.
 - Plain-text server failures are converted into safe, user-friendly UI errors.
+- LangSmith traces exclude raw questions, document text, prompts, and generated answers.
+- Tracing is optional and can be disabled without changing application code.
 
 ## Retrieval Evaluation
 
@@ -253,9 +265,11 @@ Live deployed smoke tests separately verify natural-language interpretation and 
 | Filtering | Qdrant payload indexes | Product and version isolation |
 | Generation | OpenAI Responses API | Intent interpretation and grounded answers |
 | Agent design | Custom bounded orchestration | Answer, clarify, and compare |
+| Observability | LangSmith | Privacy-safe workflow timing, routing, retrieval, and grounding traces |
 | Testing | Pytest | Unit and integration-style tests |
-| CI | GitHub Actions | Automated cross-platform verification |
-| Deployment | Render Blueprint | Hosted API and browser UI |
+| Containerization | Docker | Reproducible non-root production runtime |
+| CI | GitHub Actions | Tests, image build, health smoke test, and user verification |
+| Deployment | Render Blueprint | Docker-hosted API and browser UI |
 
 ## Project Structure
 
@@ -276,6 +290,7 @@ version-aware-doc-assistant/
 |   |-- intent_interpreter.py
 |   |-- main.py
 |   |-- models.py
+|   |-- observability.py
 |   |-- openai_generator.py
 |   |-- rag_service.py
 |   |-- retrieval_evaluation.py
@@ -295,8 +310,11 @@ version-aware-doc-assistant/
 |-- static/
 |   `-- index.html
 |-- tests/
+|-- .dockerignore
 |-- .env.example
+|-- .gitattributes
 |-- .gitignore
+|-- Dockerfile
 |-- render.yaml
 |-- requirements.txt
 `-- README.md
@@ -350,6 +368,31 @@ Open:
 - Health check: http://127.0.0.1:8000/health
 - Interactive API documentation: http://127.0.0.1:8000/docs
 
+### 6. Enable optional LangSmith tracing
+
+Create a LangSmith API key, then configure:
+
+```cmd
+set LANGSMITH_TRACING=true
+set LANGSMITH_API_KEY=your-langsmith-api-key
+set LANGSMITH_PROJECT=version-aware-doc-assistant
+```
+
+Tracing records workflow structure, timing, routing outcomes, retrieval scores, and grounding counts. Raw questions, evidence text, prompts, and generated answers are removed by trace processors before transmission.
+
+Set `LANGSMITH_TRACING=false` to disable tracing without changing code.
+
+## Run with Docker
+
+Build the same production image validated by CI and deployed by Render:
+
+```cmd
+docker build -t version-aware-doc-assistant:local .
+docker run --rm --env-file .env -p 8001:8000 version-aware-doc-assistant:local
+```
+
+Open http://127.0.0.1:8001. The container runs as a non-root application user, includes an HTTP health check, and packages the embedding model during the image build.
+
 ## Testing and Evaluation
 
 Run the automated suite:
@@ -376,7 +419,7 @@ Compare Hugging Face embedding models:
 python -m scripts.compare_embeddings
 ```
 
-GitHub Actions runs the complete test suite for pushes and pull requests without making paid OpenAI requests.
+GitHub Actions runs the complete test suite without paid OpenAI requests. After tests pass, a dependent job builds the production image, starts a container, verifies `/health`, confirms non-root execution, and removes the test container.
 
 ## Key Design Decisions
 
@@ -424,13 +467,19 @@ Reranking was evaluated as an architectural option but was not added because the
 
 Retrieval and agent workflow contracts are evaluated with labeled datasets and controlled dependencies. Live smoke tests are used separately for nondeterministic end-to-end LLM behavior.
 
+### Privacy-conscious observability
+
+LangSmith traces expose the hierarchy and timing of intent interpretation, scoped retrieval, generation, and final grounding decisions. Custom trace processors retain operational metrics while excluding raw questions, document content, prompts, and answer text.
+
 ## Deployment
 
-The application is deployed as one Render web service containing both the FastAPI API and browser UI.
+The application is deployed as one Docker-based Render web service containing both the FastAPI API and browser UI. Local development, GitHub Actions, and Render use the same production Dockerfile.
 
 Qdrant Cloud provides persistent vector storage independently of the Render instance. OpenAI and Qdrant credentials are stored only as Render environment secrets.
 
-Render automatically deploys changes from `main`, while GitHub Actions verifies the test suite.
+Render automatically deploys changes from `main`. GitHub Actions first verifies the Python suite and then builds and smoke-tests the production container. The image runs under a non-root user and packages the Hugging Face embedding model at build time to avoid a first-request download.
+
+Optional LangSmith tracing provides production workflow visibility without storing raw application content in traces.
 
 [🚀 Open the deployed assistant](https://version-aware-doc-assistant.onrender.com)
 
@@ -446,6 +495,8 @@ The deployed application has been smoke-tested for:
 - Citation presence and version correctness
 - Interactive API documentation
 - Friendly server-error handling
+- Docker health and non-root execution
+- Privacy-safe LangSmith trace creation
 
 ## Current Limitations
 
@@ -472,6 +523,6 @@ The deployed application has been smoke-tested for:
 
 This project goes beyond a basic "chat with documents" demonstration.
 
-It combines metadata-aware retrieval, conflicting-version isolation, deterministic control around probabilistic models, focused-query rewriting, bounded agent workflows, structured generation, trusted citations, explicit abstention, automated evaluation, cloud vector storage, CI, and a deployed browser experience.
+It combines metadata-aware retrieval, conflicting-version isolation, deterministic control around probabilistic models, focused-query rewriting, bounded agent workflows, structured generation, trusted citations, explicit abstention, automated evaluation, privacy-conscious observability, cloud vector storage, containerized CI/CD, and a deployed browser experience.
 
 The same architecture can later support product editions, customer isolation, department permissions, role-based access control, time-sensitive policies, and confidentiality restrictions.

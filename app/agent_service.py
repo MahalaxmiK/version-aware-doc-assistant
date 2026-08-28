@@ -1,9 +1,15 @@
 from dataclasses import dataclass
 from typing import Protocol
 
+from langsmith import traceable
+
 from app.agent_models import AgentAction
 from app.agent_router import AgentRouter
 from app.intent_interpreter import IntentInterpreter
+from app.observability import (
+    summarize_agent_inputs,
+    summarize_agent_output,
+)
 from app.rag_service import RAGResponse
 
 
@@ -49,6 +55,12 @@ class AgentService:
         self.rag_service = rag_service
         self.intent_interpreter = intent_interpreter
 
+    @traceable(
+        name="agent.workflow",
+        run_type="chain",
+        process_inputs=summarize_agent_inputs,
+        process_outputs=summarize_agent_output,
+    )
     def run_natural_language(
         self,
         question: str,

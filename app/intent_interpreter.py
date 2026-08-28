@@ -3,7 +3,13 @@ from dataclasses import dataclass
 from typing import Protocol
 
 from openai import OpenAI
+from langsmith import traceable
 from pydantic import BaseModel, Field
+
+from app.observability import (
+    summarize_intent_inputs,
+    summarize_intent_output,
+)
 
 
 DEFAULT_INTENT_MODEL = "gpt-5.6-luna"
@@ -94,6 +100,12 @@ class OpenAIIntentInterpreter:
             )
         )
 
+    @traceable(
+        name="agent.interpret_intent",
+        run_type="llm",
+        process_inputs=summarize_intent_inputs,
+        process_outputs=summarize_intent_output,
+    )
     def interpret(
         self,
         question: str,

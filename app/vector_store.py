@@ -1,9 +1,14 @@
 from dataclasses import dataclass
 from uuid import NAMESPACE_URL, uuid5
 
+from langsmith import traceable
 from qdrant_client import QdrantClient, models
 
 from app.models import DocumentChunk
+from app.observability import (
+    summarize_retrieval_inputs,
+    summarize_retrieval_output,
+)
 
 
 DEFAULT_COLLECTION_NAME = "documentation"
@@ -89,6 +94,12 @@ class VectorStore:
             points=points,
         )
 
+    @traceable(
+        name="retrieval.search",
+        run_type="retriever",
+        process_inputs=summarize_retrieval_inputs,
+        process_outputs=summarize_retrieval_output,
+    )
     def search(
         self,
         query: str,
