@@ -1,9 +1,15 @@
 from dataclasses import dataclass
 
+from langsmith import traceable
+
 from app.generation import (
     AnswerGenerator,
     Evidence,
     GeneratedDraft,
+)
+from app.observability import (
+    summarize_rag_inputs,
+    summarize_rag_output,
 )
 from app.vector_store import RetrievalResult, VectorStore
 
@@ -62,6 +68,12 @@ class RAGService:
         self.retrieval_limit = retrieval_limit
         self.minimum_score = minimum_score
 
+    @traceable(
+        name="rag.answer",
+        run_type="chain",
+        process_inputs=summarize_rag_inputs,
+        process_outputs=summarize_rag_output,
+    )
     def answer(
         self,
         question: str,

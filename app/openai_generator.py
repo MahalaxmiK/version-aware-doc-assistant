@@ -1,12 +1,17 @@
 import os
 
 from openai import OpenAI
+from langsmith import traceable
 from pydantic import BaseModel, Field
 
 from app.generation import (
     AnswerGenerator,
     Evidence,
     GeneratedDraft,
+)
+from app.observability import (
+    summarize_generation_inputs,
+    summarize_generation_output,
 )
 
 
@@ -66,6 +71,12 @@ class OpenAIAnswerGenerator(AnswerGenerator):
             )
         )
 
+    @traceable(
+        name="rag.generate_answer",
+        run_type="llm",
+        process_inputs=summarize_generation_inputs,
+        process_outputs=summarize_generation_output,
+    )
     def generate(
         self,
         question: str,

@@ -28,3 +28,12 @@ services:
 
       - key: QDRANT_COLLECTION_NAME
         value: documentation
+
+      - key: LANGSMITH_TRACING
+        value: "true"
+
+      - key: LANGSMITH_API_KEY
+        sync: false
+
+      - key: LANGSMITH_PROJECT
+        value: version-aware-doc-assistant
